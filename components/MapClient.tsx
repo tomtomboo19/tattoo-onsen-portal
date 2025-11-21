@@ -40,21 +40,26 @@ function MapLayers({ markers }: { markers: Facility[] }) {
     const latlngs: [number, number][] = []
     let clusterGroup: any = null
 
-    const makeSvgUrl = (color: string) => {
-      const svg = encodeURIComponent(`
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
-          <circle cx="14" cy="14" r="10" fill="${color}" stroke="white" stroke-width="2" />
-        </svg>
-      `)
-      return `data:image/svg+xml;utf8,${svg}`
-    }
-
     const addMarker = (f: Facility, target: any) => {
-      if (!f.latitude || !f.longitude) return
-      latlngs.push([f.latitude as number, f.longitude as number])
+      if (f.latitude == null || f.longitude == null) return
+      const lat = f.latitude as number
+      const lng = f.longitude as number
+      latlngs.push([lat, lng])
+
+      // color by tattoo availability
       const color = f.isTattooOk ? '#2ecc71' : '#e74c3c'
-      const icon = L.icon({ iconUrl: makeSvgUrl(color), iconSize: [28, 28], iconAnchor: [14, 14], className: 'image-marker' })
-      const marker = L.marker([f.latitude as number, f.longitude as number], { icon })
+
+      // DivIcon with a colored dot and optional badge text
+      const badge = f.isTattooOk ? 'タトゥー可' : 'タトゥー不可'
+      const html = `
+        <div class="custom-marker ${f.isTattooOk ? 'tattoo-ok' : 'tattoo-no'}">
+          <span class="marker-dot" style="background:${color}"></span>
+          <span class="marker-badge">${badge}</span>
+        </div>
+      `
+
+      const icon = L.divIcon({ html, className: 'custom-marker-wrapper', iconSize: [36, 36], iconAnchor: [18, 36] })
+      const marker = L.marker([lat, lng], { icon })
       const popup = `<strong>${f.name}</strong><div style="font-size:12px;margin-top:6px;">${f.description || ''}</div>`
       marker.bindPopup(popup)
       marker.on('mouseover', () => marker.openPopup())

@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { prisma } from '../../../../../lib/prisma'
-import { isAdminRequest } from '../../../../../lib/admin'
+import { prisma } from '../../../../lib/prisma'
+import { isAdminRequest } from '../../../../lib/admin'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {

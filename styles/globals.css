@@ -145,3 +145,16 @@ body {
   .container { padding: 12px }
   .site-title { font-size: 22px }
 }
+
+/* DivIcon custom marker styles */
+.custom-marker-wrapper { background: transparent; border: 0; }
+.custom-marker { position: relative; width: 36px; height: 36px; display:flex; align-items:center; justify-content:center; }
+.custom-marker .marker-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 12px rgba(33,52,71,0.12); transition: transform .12s ease; }
+.custom-marker .marker-badge { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); white-space:nowrap; font-size:11px; padding:4px 7px; border-radius:999px; color:#fff; font-weight:700; box-shadow:0 6px 18px rgba(33,52,71,0.08);} 
+.custom-marker.tattoo-ok .marker-badge { background: linear-gradient(90deg,#2ecc71,#22c06b); }
+.custom-marker.tattoo-no .marker-badge { background: linear-gradient(90deg,#ff6b6b,#e74c3c); }
+.custom-marker:hover .marker-dot { transform: translateY(-4px) scale(1.08); }
+
+/* make sure cluster z-index sits below popups */
+.leaflet-marker-pane .custom-marker-wrapper { z-index: 500 }
+
