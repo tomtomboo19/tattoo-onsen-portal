@@ -1,10 +1,21 @@
-export default function FacilityCard({facility}:{facility:any}) {
+type Props = {
+  id: number
+  name: string
+  description?: string | null
+  prefecture?: string
+  city?: string | null
+  isTattooOk?: boolean
+}
+
+export default function FacilityCard({ name, description, prefecture, city, isTattooOk }: Props) {
   return (
-    <article style={{border:'1px solid #ddd',padding:12,borderRadius:8}}>
-      <h2 style={{margin:0}}>{facility.name}</h2>
-      <p style={{margin:'4px 0'}}>{facility.prefecture} {facility.city}</p>
-      <p style={{margin:'4px 0'}}>タトゥー: {facility.tattoo_policy}</p>
-      <a href={`/facility/${facility.id}`}>詳しく</a>
-    </article>
+    <div className="card facility-card">
+      <h3 className="facility-title">{name}</h3>
+      <div className="facility-meta">{prefecture}{city ? ` / ${city}` : ''}</div>
+      <p className="facility-desc">{description}</p>
+      <div style={{ marginTop: 8 }}>
+        <span className="badge">{isTattooOk ? 'タトゥー可' : 'タトゥー要問合せ'}</span>
+      </div>
+    </div>
   )
 }

@@ -1,30 +1,42 @@
-# Tattoo-Friendly Onsen & Sauna Portal — MVP
+# タトゥーOK 温泉・サウナ ポータル（開発版）
 
-This repository contains a minimal Next.js + Supabase starter for a portal that indexes tattoo-friendly onsen and saunas.
+概要
+- Next.js + TypeScript
+- DB: MySQL（Prisma を ORM として使用）
+- まずは東京のデータにフォーカスして開発
 
-## What is included
-- Next.js app scaffold (pages, components)
-- Supabase SQL schema and seed
-- Simple API route to fetch facilities using Supabase client
-- CSV import script (Python) using Supabase Python client
-- .env.example showing required environment variables
+セットアップ（ローカル）
 
-## How to run locally (quick)
-1. Create a Supabase project and run `sql/schema.sql` and `sql/seed.sql`.
-2. Copy `.env.example` to `.env.local` and fill in your Supabase keys.
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Run dev server:
-   ```bash
-   npm run dev
-   ```
-5. Open http://localhost:3000
+1. リポジトリをクローン／作業ディレクトリへ移動
+2. .env を作成して `DATABASE_URL` を設定（.env.example を参照）
+3. 依存インストール
 
-## Deploy
-- Push to GitHub and connect the repo to Vercel.
-- Set environment variables in Vercel as in `.env.example`.
+```bash
+npm install
+```
 
-## Notes
-This is an MVP: enhance authentication, validation, image uploads, and user report moderation before going public.
+4. Prisma の生成とマイグレーション
+
+```bash
+npx prisma generate
+npx prisma migrate dev --name init
+npx ts-node prisma/seed.ts
+```
+
+5. 開発サーバ起動
+
+```bash
+npm run dev
+```
+
+API
+- GET /api/facilities?prefecture=東京都&city=渋谷区&keyword=サウナ
+- POST /api/submit  (施設情報の投稿。管理画面で承認されるまで status は pending)
+
+今後のタスク
+- 詳細検索 UI（条件フィルタ、タグ）
+- 地図表示（Leaflet or Google Maps）とピン表示
+- ユーザー投稿の承認フロー（管理画面）
+- マネタイズ案検討（広告、プレミアム掲載など）
+
+開発段階はまず東京のデータを集め、UI を優先して作ります。ご要望あれば機能優先度を調整します。

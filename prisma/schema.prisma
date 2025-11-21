@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Facility {
+  id           Int      @id @default(autoincrement())
+  name         String
+  description  String?
+  prefecture   String   @default("東京都")
+  city         String?
+  address      String?
+  isTattooOk   Boolean  @default(false)
+  tags         String?  // JSON or CSV string for simple tags
+  latitude     Float?
+  longitude    Float?
+  source       String?  // user-submitted / seed / admin
+  status       String   @default("pending") // pending | approved | rejected
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
