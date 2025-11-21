@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}"
+self.__REACT_LOADABLE_MANIFEST="{\"components/MapClient.tsx -> leaflet.markercluster\":{\"id\":\"components/MapClient.tsx -> leaflet.markercluster\",\"files\":[\"static/chunks/node_modules_leaflet_markercluster_dist_leaflet_markercluster-src_js.js\"]},\"pages/index.tsx -> ../components/MapClient\":{\"id\":\"pages/index.tsx -> ../components/MapClient\",\"files\":[\"static/chunks/components_MapClient_tsx.js\"]}}"

@@ -1,7 +1,10 @@
 import useSWR from 'swr'
 import { useState, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import FacilityCard from '../components/FacilityCard'
 import MapPlaceholder from '../components/MapPlaceholder'
+
+const MapClient = dynamic(() => import('../components/MapClient'), { ssr: false, loading: () => <MapPlaceholder /> })
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -48,7 +51,8 @@ export default function Home() {
       <h1 className="site-title">タトゥーOK 温泉・サウナ ポータル（開発版）</h1>
       <p className="subtitle">現在は東京のデータのみを対象に開発しています。</p>
 
-      <MapPlaceholder />
+  {/* client-only map (Leaflet) - loads dynamically to avoid SSR issues */}
+  <MapClient markers={facilities} />
 
       <section style={{ marginTop: 16 }}>
         <h2>検索</h2>

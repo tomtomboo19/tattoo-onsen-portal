@@ -128,6 +128,18 @@ body {
 }
 .page-info { font-size: 14px; color: #5b6a80; }
 
+/* Map marker styles */
+.image-marker { transition: transform .12s ease; }
+.image-marker:hover { transform: translateY(-6px) scale(1.05); }
+
+/* Custom cluster styles inserted by MapClient.iconCreateFunction */
+.custom-cluster-wrapper { background: transparent; border: 0; }
+.custom-cluster { display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:20px; color:#fff; font-weight:700; box-shadow:0 6px 18px rgba(0,0,0,0.12); }
+.custom-cluster-small { background: rgba(98, 182, 255, 0.95); }
+.custom-cluster-medium { background: rgba(155, 103, 255, 0.95); }
+.custom-cluster-large { background: rgba(255, 99, 132, 0.95); }
+.custom-cluster span { display:block; font-size:13px; padding:4px 6px; }
+
 /* small screens */
 @media (max-width: 640px) {
   .container { padding: 12px }
