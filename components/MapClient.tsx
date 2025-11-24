@@ -20,7 +20,19 @@ type Facility = {
   tags?: string | null
 }
 
-function MapLayers({ markers }: { markers: Facility[] }) {
+// 施設ID→マーカーを外に渡すための型
+type MapClientProps = {
+  markers: Facility[]
+  onMarkerReady?: (facilityId: number, marker: L.Marker) => void
+}
+
+function MapLayers({
+  markers,
+  onMarkerReady,
+}: {
+  markers: Facility[]
+  onMarkerReady?: (facilityId: number, marker: L.Marker) => void
+}) {
   const map = useMap()
 
   useEffect(() => {
@@ -58,12 +70,31 @@ function MapLayers({ markers }: { markers: Facility[] }) {
         </div>
       `
 
-      const icon = L.divIcon({ html, className: 'custom-marker-wrapper', iconSize: [36, 36], iconAnchor: [18, 36] })
+      const icon = L.divIcon({
+        html,
+        className: 'custom-marker-wrapper',
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        interactive: true, // ← 追加: divIcon 自体をインタラクティブに
+      })
       const marker = L.marker([lat, lng], { icon })
       const popup = `<strong>${f.name}</strong><div style="font-size:12px;margin-top:6px;">${f.description || ''}</div>`
       marker.bindPopup(popup)
+
+      // カード側からもクリックできるように、マーカーを外へ通知
+      if (onMarkerReady) {
+        onMarkerReady(f.id, marker)
+      }
+
+      // PC: ホバーで開閉
       marker.on('mouseover', () => marker.openPopup())
       marker.on('mouseout', () => marker.closePopup())
+
+      // クリックでも確実に開く（モバイル対応）
+      marker.on('click', () => {
+        marker.openPopup()
+      })
+
       if (target && typeof target.addLayer === 'function') target.addLayer(marker)
       else marker.addTo(target)
     }
@@ -104,24 +135,31 @@ function MapLayers({ markers }: { markers: Facility[] }) {
         }
       } catch (_) {}
     }
-  }, [map, markers])
+  }, [map, markers, onMarkerReady])
 
   return null
 }
 
-export default function MapClient({ markers }: { markers: Facility[] }) {
+export default function MapClient({ markers, onMarkerReady }: MapClientProps) {
   const center: [number, number] = markers && markers.length && markers[0].latitude && markers[0].longitude
     ? [markers[0].latitude as number, markers[0].longitude as number]
     : [35.6762, 139.6503]
 
   return (
     <div style={{ height: 360, borderRadius: 12, overflow: 'hidden' }}>
-      <MapContainer center={center} zoom={12} style={{ height: '100%', width: '100%' }}>
+      <MapContainer
+        center={center}
+        zoom={13}             // 少し寄り気味にして Google Maps の初期感に近づける
+        minZoom={5}
+        maxZoom={19}
+        style={{ height: '100%', width: '100%' }}
+      >
+        {/* Google マップ風タイル: 実運用では MapTiler / Stadia などに差し替えてください */}
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        <MapLayers markers={markers} />
+        <MapLayers markers={markers} onMarkerReady={onMarkerReady} />
       </MapContainer>
     </div>
   )

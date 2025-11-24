@@ -28,7 +28,25 @@ export default function AdminPage() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const res = await fetch('/api/admin/me')
+        if (res.ok) {
+          const data = await res.json()
+          setAuthed(data.authed)
+          if (data.authed) {
+            await load()
+          }
+        } else {
+          setAuthed(false)
+        }
+      } catch {
+        setAuthed(false)
+      }
+    }
+    init()
+  }, [])
 
   async function updateStatus(id: number, status: string) {
     await fetch(`/api/admin/facility/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) })
@@ -37,13 +55,18 @@ export default function AdminPage() {
 
   async function doLogin(e?: React.FormEvent) {
     e?.preventDefault()
-    const res = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) })
-    if (res.ok) {
-      setAuthed(true)
-      setPassword('')
-      load()
-    } else {
-      alert('認証に失敗しました')
+    setLoading(true)
+    try {
+      const res = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) })
+      if (res.ok) {
+        setAuthed(true)
+        setPassword('')
+        load()
+      } else {
+        alert('認証に失敗しました')
+      }
+    } finally {
+      setLoading(false)
     }
   }
 

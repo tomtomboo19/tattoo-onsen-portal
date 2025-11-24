@@ -134,7 +134,18 @@ body {
 
 /* Custom cluster styles inserted by MapClient.iconCreateFunction */
 .custom-cluster-wrapper { background: transparent; border: 0; }
-.custom-cluster { display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:20px; color:#fff; font-weight:700; box-shadow:0 6px 18px rgba(0,0,0,0.12); }
+.custom-cluster {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  height:40px;
+  border-radius:20px;
+  color:#fff;
+  font-weight:700;
+  /* Google Maps のクラスタに近い強めの影 */
+  box-shadow:0 2px 4px rgba(0,0,0,0.24), 0 2px 8px rgba(0,0,0,0.18);
+}
 .custom-cluster-small { background: rgba(98, 182, 255, 0.95); }
 .custom-cluster-medium { background: rgba(155, 103, 255, 0.95); }
 .custom-cluster-large { background: rgba(255, 99, 132, 0.95); }
@@ -147,14 +158,202 @@ body {
 }
 
 /* DivIcon custom marker styles */
-.custom-marker-wrapper { background: transparent; border: 0; }
-.custom-marker { position: relative; width: 36px; height: 36px; display:flex; align-items:center; justify-content:center; }
-.custom-marker .marker-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 12px rgba(33,52,71,0.12); transition: transform .12s ease; }
-.custom-marker .marker-badge { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); white-space:nowrap; font-size:11px; padding:4px 7px; border-radius:999px; color:#fff; font-weight:700; box-shadow:0 6px 18px rgba(33,52,71,0.08);} 
-.custom-marker.tattoo-ok .marker-badge { background: linear-gradient(90deg,#2ecc71,#22c06b); }
-.custom-marker.tattoo-no .marker-badge { background: linear-gradient(90deg,#ff6b6b,#e74c3c); }
-.custom-marker:hover .marker-dot { transform: translateY(-4px) scale(1.08); }
+.custom-marker-wrapper { 
+  background: transparent; 
+  border: 0;
+  pointer-events: none; /* マーカー内部でイベントを拾わず、Leaflet マーカーに渡す */
+}
 
-/* make sure cluster z-index sits below popups */
-.leaflet-marker-pane .custom-marker-wrapper { z-index: 500 }
+/* ここからピンを Google Maps っぽく調整 */
+.custom-marker {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events: none; /* ここも none にしておく */
+  cursor: pointer;
+}
+
+/* メインのピンドット */
+.custom-marker .marker-dot {
+  width: 20px;               /* 少し大きめにして Google ピンっぽく */
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid white;
+  /* Google ピンのようなはっきりした影 */
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.24),
+    0 2px 8px rgba(0, 0, 0, 0.18);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+/* バッジはシンプルに */
+.custom-marker .marker-badge {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space:nowrap;
+  font-size:11px;
+  padding:4px 7px;
+  border-radius:999px;
+  color:#fff;
+  font-weight:700;
+  box-shadow:0 2px 4px rgba(0,0,0,0.24);
+}
+
+/* タトゥー可/不可で色を切り替え（Google 赤/緑に寄せる） */
+.custom-marker.tattoo-ok .marker-dot {
+  background: #34a853;  /* Google グリーン */
+}
+.custom-marker.tattoo-no .marker-dot {
+  background: #ea4335;  /* Google レッド */
+}
+.custom-marker.tattoo-ok .marker-badge {
+  background: linear-gradient(90deg,#34a853,#1e8e3e);
+}
+.custom-marker.tattoo-no .marker-badge {
+  background: linear-gradient(90deg,#ea4335,#c5221f);
+}
+
+/* ホバー時は軽く持ち上がる程度に */
+.custom-marker:hover .marker-dot {
+  transform: translateY(-2px) scale(1.04);
+}
+
+/* Leaflet marker pane の z-index 調整 */
+.leaflet-marker-pane .custom-marker-wrapper { 
+  z-index: 500;
+}
+
+/* --- Leaflet popup layout fix --- */
+/* ポップアップは map コンテナの中で絶対配置されるべきなので補強する */
+.leaflet-container {
+  position: relative; /* 念のため */
+}
+
+/* ポップアップコンテナをページレイアウトから切り離す */
+.leaflet-popup-pane {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 700; /* マーカーより上 */
+}
+
+/* ポップアップ自体も absolute で配置（body フローに乗らないように） */
+.leaflet-popup {
+  position: absolute;
+}
+
+/* --- Facility detail modal styles --- */
+.facility-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.facility-modal-card {
+  position: relative;
+  max-width: 640px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+  padding: 20px 24px;
+}
+
+.facility-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.facility-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.facility-modal-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.facility-modal-title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.facility-modal-location {
+  font-size: 13px;
+  color: #6b7b8f;
+}
+
+.facility-modal-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.facility-modal-badge-ok {
+  background: linear-gradient(90deg, #34a853, #1e8e3e);
+}
+
+.facility-modal-badge-ng {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.facility-modal-description {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #3b4858;
+}
+
+.facility-modal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.facility-modal-row {
+  display: flex;
+  gap: 8px;
+}
+
+.facility-modal-label {
+  width: 72px;
+  flex-shrink: 0;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.facility-modal-value {
+  flex: 1;
+  color: #374151;
+}
+
+@media (max-width: 640px) {
+  .facility-modal-card {
+    width: 94%;
+    padding: 16px 14px 18px;
+  }
+}
 

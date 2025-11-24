@@ -3,4 +3,5 @@ node_modules
 .env
 .next
 /.DS_Store
-echo ".env" >> .gitignore
+package-lock.json
+package.json

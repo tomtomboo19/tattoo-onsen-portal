@@ -1,25 +1,36 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+    provider = "mysql"
+    url      = env("DATABASE_URL")
 }
 
 model Facility {
-  id           Int      @id @default(autoincrement())
-  name         String
-  description  String?
-  prefecture   String   @default("東京都")
-  city         String?
-  address      String?
-  isTattooOk   Boolean  @default(false)
-  tags         String?  // JSON or CSV string for simple tags
-  latitude     Float?
-  longitude    Float?
-  source       String?  // user-submitted / seed / admin
-  status       String   @default("pending") // pending | approved | rejected
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+    id           Int      @id @default(autoincrement())
+    name         String
+    description  String?
+    prefecture   String   @default("東京都")
+    city         String?
+    address      String?
+    isTattooOk   Boolean  @default(false)
+    tags         String?  // JSON or CSV string for simple tags
+    latitude     Float?
+    longitude    Float?
+    source       String?  // user-submitted / seed / admin
+    status       String   @default("pending") // pending | approved | rejected
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    // 追加: 詳細情報
+    openingHours String?  // 営業時間（例: "10:00〜23:00"）
+    closedDays   String?  // 休館日（例: "年中無休", "毎週水曜日"）
+    phone        String?  // 電話番号
+    website      String?  // 公式サイトURL
 }
+
+SELECT id, name, status
+FROM Facility
+ORDER BY id
+LIMIT 10;

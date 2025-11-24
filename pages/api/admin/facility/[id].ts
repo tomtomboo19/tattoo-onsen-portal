@@ -1,25 +1,31 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../../lib/prisma'
-import { isAdminRequest } from '../../../../lib/admin'
+import { requireAdmin } from '../../../../lib/requireAdmin'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const { id } = req.query
-    if (!id) return res.status(400).json({ error: 'id_required' })
-    const fid = Number(id)
+  if (!requireAdmin(req, res)) return
 
-    if (req.method === 'POST') {
-      if (!isAdminRequest(req)) return res.status(401).json({ error: 'unauthorized' })
-      const { status } = req.body
-      if (!['approved', 'rejected', 'pending'].includes(status)) return res.status(400).json({ error: 'invalid_status' })
-      const updated = await prisma.facility.update({ where: { id: fid }, data: { status } })
-      return res.status(200).json({ updated })
-    }
-
-    res.setHeader('Allow', ['POST'])
-    res.status(405).end(`Method ${req.method} Not Allowed`)
-  } catch (e) {
-    console.error(e)
-    res.status(500).json({ error: 'server_error' })
+  const id = Number(req.query.id)
+  if (Number.isNaN(id)) {
+    res.status(400).json({ ok: false, error: 'Invalid id' })
+    return
   }
+
+  if (req.method !== 'POST') {
+    res.status(405).end()
+    return
+  }
+
+  const { status } = req.body as { status?: string }
+  if (!status || !['approved', 'rejected', 'pending'].includes(status)) {
+    res.status(400).json({ ok: false, error: 'Invalid status' })
+    return
+  }
+
+  await prisma.facility.update({
+    where: { id },
+    data: { status },
+  })
+
+  res.status(200).json({ ok: true })
 }
