@@ -24,19 +24,29 @@ type Facility = {
 type MapClientProps = {
   markers: Facility[]
   onMarkerReady?: (facilityId: number, marker: L.Marker) => void
+  onMapReady?: (map: L.Map) => void
 }
 
 function MapLayers({
   markers,
   onMarkerReady,
+  onMapReady,
 }: {
   markers: Facility[]
   onMarkerReady?: (facilityId: number, marker: L.Marker) => void
+  onMapReady?: (map: L.Map) => void
 }) {
   const map = useMap()
 
   useEffect(() => {
     if (!map) return
+
+    // inform parent about the map instance (so callers can pan/fit without touching protected members)
+    try {
+      onMapReady?.(map)
+    } catch (e) {
+      // ignore
+    }
 
     // cleanup previous cluster if present
     try {
@@ -65,6 +75,7 @@ function MapLayers({
       const badge = f.isTattooOk ? 'タトゥー可' : 'タトゥー不可'
       const html = `
         <div class="custom-marker ${f.isTattooOk ? 'tattoo-ok' : 'tattoo-no'}">
+          <span class="marker-hit"></span>
           <span class="marker-dot" style="background:${color}"></span>
           <span class="marker-badge">${badge}</span>
         </div>
@@ -74,12 +85,28 @@ function MapLayers({
         html,
         className: 'custom-marker-wrapper',
         iconSize: [36, 36],
-        iconAnchor: [18, 36],
-        interactive: true, // ← 追加: divIcon 自体をインタラクティブに
-      })
-      const marker = L.marker([lat, lng], { icon })
-      const popup = `<strong>${f.name}</strong><div style="font-size:12px;margin-top:6px;">${f.description || ''}</div>`
-      marker.bindPopup(popup)
+        // anchor the icon at its center so the visible circular area is centered on the lat/lng
+        iconAnchor: [18, 18],
+        // interactive is not part of the DivIconOptions TS type in some @types/leaflet versions
+        // cast to any to avoid type errors while keeping the runtime behavior
+      } as any)
+      // Ensure the marker and its divIcon are interactive so DOM events are captured for the
+      // whole icon (not just the tip). riseOnHover helps with visual feedback and zIndexOffset
+      // makes hovered markers appear above others.
+      const marker = L.marker([lat, lng], { icon, interactive: true, riseOnHover: true, zIndexOffset: 1000 })
+      // Build a richer popup matching the facility quick view
+      const safeDesc = (f.description || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      const popup = `
+        <div class="map-popup-card">
+          <div class="map-popup-body">
+            <div class="map-popup-title">${f.name}</div>
+            <div class="map-popup-location">${f.latitude && f.longitude ? '' : ''}</div>
+            <div class="map-popup-desc">${safeDesc}</div>
+          </div>
+          <div class="map-popup-badge ${f.isTattooOk ? 'map-badge-ok' : 'map-badge-ng'}">${f.isTattooOk ? 'タトゥー可' : '要確認'}</div>
+        </div>
+      `
+      marker.bindPopup(popup, { maxWidth: 360, className: 'map-popup-wrapper' })
 
       // カード側からもクリックできるように、マーカーを外へ通知
       if (onMarkerReady) {
@@ -140,7 +167,7 @@ function MapLayers({
   return null
 }
 
-export default function MapClient({ markers, onMarkerReady }: MapClientProps) {
+export default function MapClient({ markers, onMarkerReady, onMapReady }: MapClientProps) {
   const center: [number, number] = markers && markers.length && markers[0].latitude && markers[0].longitude
     ? [markers[0].latitude as number, markers[0].longitude as number]
     : [35.6762, 139.6503]
@@ -159,7 +186,7 @@ export default function MapClient({ markers, onMarkerReady }: MapClientProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        <MapLayers markers={markers} onMarkerReady={onMarkerReady} />
+        <MapLayers markers={markers} onMarkerReady={onMarkerReady} onMapReady={onMapReady} />
       </MapContainer>
     </div>
   )

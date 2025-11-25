@@ -9,20 +9,26 @@ export function createFacilitiesHandler(db: any) {
         const where: any = { status: 'approved' }
         if (prefecture) where.prefecture = String(prefecture)
         if (city) where.city = String(city)
+
+        // Build OR conditions for keyword and tags
+        const orConditions: any[] = []
         if (keyword) {
           const k = String(keyword)
-          where.OR = [
+          orConditions.push(
             { name: { contains: k } },
             { description: { contains: k } },
             { tags: { contains: k } }
-          ]
+          )
         }
-        // tags: optional comma separated values, match any
         if (tags) {
           const t = String(tags).split(',').map(s => s.trim()).filter(Boolean)
-          if (t.length > 0) {
-            where.OR = [...(where.OR || []), ...t.map((tag: string) => ({ tags: { contains: tag } }))]
-          }
+          t.forEach((tag: string) => {
+            orConditions.push({ tags: { contains: tag } })
+          })
+        }
+        // Only add OR clause if there are conditions
+        if (orConditions.length > 0) {
+          where.OR = orConditions
         }
 
         const p = Math.max(1, parseInt(String(page), 10) || 1)

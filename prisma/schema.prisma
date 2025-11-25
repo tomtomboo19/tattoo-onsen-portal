@@ -23,14 +23,51 @@ model Facility {
     createdAt    DateTime @default(now())
     updatedAt    DateTime @updatedAt
 
-    // 追加: 詳細情報
+    // 詳細情報
     openingHours String?  // 営業時間（例: "10:00〜23:00"）
     closedDays   String?  // 休館日（例: "年中無休", "毎週水曜日"）
     phone        String?  // 電話番号
     website      String?  // 公式サイトURL
+    price        String?  // 料金（例: "1,100円〜"）
+    
+    // バスタイプ別情報（JSON 形式で保存）
+    // 例: { "男湯": {"temperature": 42, "capacity": 96}, "女湯": {"temperature": 41, "capacity": 91}, ... }
+    bathTypes    String?  // JSON string with bath type details
+
+    // 設備・ルール（JSON 配列：複数選択可能）
+    // 例: ["24時間営業", "Wi-Fi", "駐車場", "露天風呂スペース", "食事処", ...]
+    facilities   String?  // JSON array of facility/rule options
+
+    // 支払い方法（JSON 配列）
+    // 例: ["現金", "クレジットカード", "電子マネー"]
+    paymentMethods String?  // JSON array of payment methods
+
+    // タオル・館内着・サウナマット（JSON 配列）
+    // 例: ["レンタルフェイスタオル有料", "レンタルバスタオル有料", "館内着", "サウナマットビート板"]
+    towelOptions String?  // JSON array of towel/clothing options
+
+    // アメニティ（JSON 配列）
+    // 例: ["シャンプー", "カミソリ", "コンディショナー", "ボディソープ", ...]
+    amenities    String?  // JSON array of amenities
+
+    // リラクゼーション（JSON 配列）
+    // 例: ["ボディケア", "アカスリ", "タイ古式", "ヘッドスパ"]
+    relaxation   String?  // JSON array of relaxation services
+
+    // その他情報
+    accomodation String?  // 宿泊予約の有無・リンク情報
 }
 
-SELECT id, name, status
-FROM Facility
-ORDER BY id
-LIMIT 10;
+// User model for authentication (optional). If you want to enable user
+// registration, add this model and run `npx prisma migrate dev --name add_user`
+// then restart the Next.js server.
+model User {
+    id Int @id @default(autoincrement())
+    name String
+    email String @unique
+    passwordHash String
+    passwordSalt String
+    role String @default("user")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
